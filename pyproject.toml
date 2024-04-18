@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "sentilens"
+version = "0.1.0"
+description = ""
+authors = ["MelDxKviel <mega1hack52@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.110.1"
+uvicorn = {extras = ["standard"], version = "^0.29.0"}
+celery = {extras = ["redis"], version = "^5.3.6"}
+pyjwt = "^2.8.0"
+deep-translator = "^1.11.4"
+nltk = "^3.8.1"
+sqlmodel = "^0.0.16"
+pydantic = {extras = ["email"], version = "^2.7.0"}
+pydantic-settings = "^2.2.1"
+passlib = "^1.7.4"
+alembic = "^1.13.1"
+psycopg2-binary = "^2.9.9"
+gunicorn = "^21.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
