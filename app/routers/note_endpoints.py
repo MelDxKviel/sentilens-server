@@ -20,7 +20,7 @@ auth_handler = AuthHandler()
 
 @note_router.get("/", response_model=list[NoteRead])
 async def get_notes(session: Session = Depends(get_session),
-                    user_id=Depends(auth_handler.auth_access_wrapper)):
+                    user_id=Depends(auth_handler.auth_access_wrapper)) -> list[NoteRead]:
     notes = session.exec(
         select(Note).where(Note.owner_id == user_id).order_by(Note.created_at)
     ).all()
@@ -29,9 +29,10 @@ async def get_notes(session: Session = Depends(get_session),
 
 @note_router.get("/{note_id}", response_model=NoteRead)
 async def get_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
-                   user_id=Depends(auth_handler.auth_access_wrapper)):
+                   user_id=Depends(auth_handler.auth_access_wrapper)) -> NoteRead:
     note = session.exec(
-        select(Note).where(Note.uuid == note_id).where(Note.owner_id == user_id)
+        select(Note).where(Note.uuid == note_id).where(
+            Note.owner_id == user_id)
     ).first()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -41,7 +42,7 @@ async def get_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_sessio
 
 @note_router.post("/", response_model=NoteRead)
 async def create_note(note: NoteCreate, session: Session = Depends(get_session),
-                      user_id=Depends(auth_handler.auth_access_wrapper)):
+                      user_id=Depends(auth_handler.auth_access_wrapper)) -> NoteRead:
 
     db_note = Note.model_validate(note)
     sentiment = get_sentiment(db_note.content, session)
@@ -60,9 +61,10 @@ async def create_note(note: NoteCreate, session: Session = Depends(get_session),
 
 @note_router.delete("/{note_id}")
 async def delete_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
-                      user_id=Depends(auth_handler.auth_access_wrapper)):
+                      user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
     note = session.exec(
-        select(Note).where(Note.uuid == note_id).where(Note.owner_id == user_id)
+        select(Note).where(Note.uuid == note_id).where(
+            Note.owner_id == user_id)
     ).first()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -72,10 +74,14 @@ async def delete_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_ses
 
 
 @note_router.put("/{note_id}", response_model=NoteRead)
-async def update_note(note_id: uuid_pkg.UUID, note: NoteCreate, session: Session = Depends(get_session),
-                      user_id=Depends(auth_handler.auth_access_wrapper)):
+async def update_note(
+    note_id: uuid_pkg.UUID, note: NoteCreate,
+    session: Session = Depends(get_session),
+    user_id=Depends(auth_handler.auth_access_wrapper)
+) -> NoteRead:
     db_note = session.exec(
-        select(Note).where(Note.uuid == note_id).where(Note.owner_id == user_id)
+        select(Note).where(Note.uuid == note_id).where(
+            Note.owner_id == user_id)
     ).first()
     if not db_note:
         raise HTTPException(status_code=404, detail="Note not found")
@@ -83,29 +89,33 @@ async def update_note(note_id: uuid_pkg.UUID, note: NoteCreate, session: Session
     db_note.title = note.title
     db_note.content = note.content
     db_note.updated_at = datetime.now()
-    
+
     old_sentiment = session.exec(
         select(Sentiment).where(Sentiment.id == db_note.sentiment_id)
     ).first()
-    
+
     new_sentiment = get_sentiment(db_note.content, session)
     db_note.sentiment_id = new_sentiment.id
-    
+
     session.add(db_note)
     session.commit()
     session.refresh(db_note)
-    
+
     session.delete(old_sentiment)
     session.commit()
-    
+
     return db_note
 
 
 @note_router.patch("/{note_id}", response_model=NoteRead)
-async def update_note_partial(note_id: uuid_pkg.UUID, note: NoteCreate, session: Session = Depends(get_session),
-                              user_id=Depends(auth_handler.auth_access_wrapper)):
+async def update_note_partial(
+    note_id: uuid_pkg.UUID,
+    note: NoteCreate, session: Session = Depends(get_session),
+    user_id=Depends(auth_handler.auth_access_wrapper)
+) -> NoteRead:
     db_note = session.exec(
-        select(Note).where(Note.uuid == note_id).where(Note.owner_id == user_id)
+        select(Note).where(Note.uuid == note_id).where(
+            Note.owner_id == user_id)
     ).first()
     old_sentiment = None
     if not db_note:
@@ -117,7 +127,7 @@ async def update_note_partial(note_id: uuid_pkg.UUID, note: NoteCreate, session:
         old_sentiment = session.exec(
             select(Sentiment).where(Sentiment.id == db_note.sentiment_id)
         ).first()
-        
+
         new_sentiment = get_sentiment(db_note.note, session)
         db_note.sentiment_id = new_sentiment.id
 
@@ -125,31 +135,8 @@ async def update_note_partial(note_id: uuid_pkg.UUID, note: NoteCreate, session:
     session.add(db_note)
     session.commit()
     session.refresh(db_note)
-    
+
     if old_sentiment:
         session.delete(old_sentiment)
         session.commit()
     return db_note
-
-
-# @note_router.get("/{note_id}/analyze", response_model=SentimentReadWithAdvices)
-# async def analyze_sentiment_by_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
-#                                     user_id=Depends(auth_handler.auth_wrapper)):
-#     db_note = session.exec(
-#         select(Note).where(Note.uuid == note_id).where(Note.owner_id == user_id)
-#     ).first()
-#     if not db_note:
-#         raise HTTPException(status_code=404, detail="Note not found")
-#     db_sentiment = session.exec(
-#         select(Sentiment).where(Sentiment.title == db_note.sentiment_id)
-#     ).first()
-#     return SentimentRead.model_validate(db_sentiment)
-
-
-# @note_router.post("/analyze-by-text", response_model=SentimentRead)
-# async def analyze_sentiment_by_text(text: Text, session: Session = Depends(get_session)):
-#     mood = get_sentiment(text.text)
-#     db_sentiment = session.exec(
-#         select(Sentiment).where(Sentiment.title == mood)
-#     ).first()
-#     return SentimentRead.model_validate(db_sentiment)

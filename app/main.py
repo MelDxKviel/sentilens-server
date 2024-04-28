@@ -6,6 +6,7 @@ from app.database import init_db
 from app.routers import note_router, user_router
 from app.config import global_settings
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # init_db()

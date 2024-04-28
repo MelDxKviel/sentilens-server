@@ -6,7 +6,8 @@ from sqlmodel import SQLModel, Field, AutoString
 
 
 class UserBase(SQLModel):
-    username: str = Field(index=True, unique=True, max_length=255, min_length=3)
+    username: str = Field(index=True, unique=True,
+                          max_length=255, min_length=3)
     email: EmailStr = Field(unique=True, index=True, sa_type=AutoString)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     is_superuser: bool = Field(default=False)
