@@ -1,10 +1,10 @@
-from random import randint
+from random import choice
 from math import fabs
 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from deep_translator import GoogleTranslator
 
-from app.models import Sentiment
+from app.models import Sentiment, MoodCategory
 
 
 def analyze_sentiment(text):
@@ -17,7 +17,13 @@ def analyze_sentiment(text):
 def get_sentiment(text: str, session):
     mood_value = fabs(analyze_sentiment(text))
 
-    category = randint(0, 4)
+    category = choice([
+        MoodCategory.TERRIBLE,
+        MoodCategory.BAD,
+        MoodCategory.NEUTRAL,
+        MoodCategory.GOOD,
+        MoodCategory.AWESOME
+    ])
 
     sentiment = Sentiment(
         category=category,
