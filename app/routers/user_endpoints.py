@@ -45,12 +45,12 @@ async def delete_user(session: Session = Depends(get_session), user_id=Depends(a
     return JSONResponse(status_code=204, content={"detail": "User has been deleted"})
 
 
-@user_router.get("/me", response_model=UserRead)
+@user_router.get("/profile", response_model=UserRead)
 async def get_user(user_id=Depends(auth_handler.auth_access_wrapper), session: Session = Depends(get_session)) -> UserRead:
     return crud.get_user(user_id, session)
 
 
-@user_router.put("/me", response_model=UserRead)
+@user_router.put("/profile", response_model=UserRead)
 async def update_user(user: UserUpdate, session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> UserRead:
     return crud.update_user(user, session, user_id)
 
