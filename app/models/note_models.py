@@ -36,3 +36,9 @@ class NoteRead(NoteBase):
 class NoteCreate(NoteBase, SQLModel):
     uuid: Optional[uuid_pkg.UUID] = Field(
         default_factory=uuid_pkg.uuid4, primary_key=True, index=True, nullable=False)
+    
+class NoteOptional(NoteBase):
+    uuid: Optional[uuid_pkg.UUID] = Field(
+        default_factory=uuid_pkg.uuid4, primary_key=True, index=True, nullable=False)
+    title: str | None = None
+    content: str | None = None
