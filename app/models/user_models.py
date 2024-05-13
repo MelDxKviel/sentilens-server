@@ -36,3 +36,13 @@ class UserLogin(SQLModel):
 class UserCreate(UserBase):
     password: str
     access_token: str = None
+
+
+class UserUpdate(SQLModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+
+class PasswordChange(SQLModel):
+    old_password: str
+    new_password: str

@@ -4,7 +4,7 @@ from sqlmodel import select, Session
 
 from app.database import get_session
 from app.auth import AuthHandler, LoginToken, AccessToken
-from app.models import UserRead, UserLogin, UserRegister
+from app.models import UserRead, UserLogin, UserRegister, UserUpdate, PasswordChange
 from app import crud
 
 
@@ -43,3 +43,19 @@ async def update_token(user_id=Depends(auth_handler.auth_refresh_wrapper)) -> Ac
 async def delete_user(session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
     crud.delete_user(session, user_id)
     return JSONResponse(status_code=204, content={"detail": "User has been deleted"})
+
+
+@user_router.get("/me", response_model=UserRead)
+async def get_user(user_id=Depends(auth_handler.auth_access_wrapper), session: Session = Depends(get_session)) -> UserRead:
+    return crud.get_user(user_id, session)
+
+
+@user_router.put("/me", response_model=UserRead)
+async def update_user(user: UserUpdate, session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> UserRead:
+    return crud.update_user(user, session, user_id)
+
+
+@user_router.post("/change_password")
+async def change_password(passwords: PasswordChange, session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
+    crud.change_password(passwords, session, user_id)
+    return JSONResponse(status_code=204, content={"detail": "Password has been changed"})
