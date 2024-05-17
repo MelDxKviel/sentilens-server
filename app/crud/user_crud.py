@@ -15,10 +15,9 @@ def register_user(user: UserRegister, session: Session):
 
     if any(u.email == user.email for u in users):
         raise HTTPException(status_code=400, detail="Email already registered")
-    UserUpdate
+
     if any(u.username == user.username for u in users):
-        HTTPException(
-            status_code=400, detail="Username already registered")
+        raise HTTPException(status_code=400, detail="Username already registered")
 
     user.password = auth_handler.get_password_hash(user.password)
     db_user = User.model_validate(user)

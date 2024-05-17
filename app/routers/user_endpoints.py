@@ -21,18 +21,24 @@ auth_handler = AuthHandler()
     400: {"description": "Email or username already registered"},
     201: {"description": "User created successfully"}})
 async def register_user(user: UserRegister, session: Session = Depends(get_session)) -> UserRead:
-    user = crud.register_user(user, session)
+    user = crud.register_user(
+        user=user,
+        session=session
+    )
     return user
 
 
 @user_router.post("/login", response_model=LoginToken)
 async def login_user(user: UserLogin, session: Session = Depends(get_session)) -> LoginToken:
-    login_token = crud.get_login_token(user, session)
+    login_token = crud.get_login_token(
+        user=user,
+        session=session
+    )
     return login_token
 
 
-@user_router.post("/update_token", response_model=AccessToken)
-async def update_token(user_id=Depends(auth_handler.auth_refresh_wrapper)) -> AccessToken:
+@user_router.post("/update_token", response_model=LoginToken)
+async def update_token(user_id=Depends(auth_handler.auth_refresh_wrapper)) -> LoginToken:
     if user_id is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
     access_token = auth_handler.encode_login_token(user_id)
@@ -41,21 +47,31 @@ async def update_token(user_id=Depends(auth_handler.auth_refresh_wrapper)) -> Ac
 
 @user_router.post("/delete")
 async def delete_user(session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
-    crud.delete_user(session, user_id)
+    crud.delete_user(
+        user_id=user_id,
+        session=session
+    )
     return JSONResponse(status_code=204, content={"detail": "User has been deleted"})
 
 
 @user_router.get("/profile", response_model=UserRead)
 async def get_user(user_id=Depends(auth_handler.auth_access_wrapper), session: Session = Depends(get_session)) -> UserRead:
-    return crud.get_user(user_id, session)
+    return crud.get_user(
+        user_id=user_id,
+        session=session
+    )
 
 
 @user_router.put("/profile", response_model=UserRead)
 async def update_user(user: UserUpdate, session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> UserRead:
-    return crud.update_user(user, session, user_id)
+    return crud.update_user(
+        user=user,
+        session=session,
+        user_id=user_id
+    )
 
 
 @user_router.post("/change_password")
 async def change_password(passwords: PasswordChange, session: Session = Depends(get_session), user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
-    crud.change_password(passwords, session, user_id)
+    crud.change_password(passwords=passwords, session=session, user_id=user_id)
     return JSONResponse(status_code=204, content={"detail": "Password has been changed"})

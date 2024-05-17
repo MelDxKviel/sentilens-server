@@ -25,7 +25,7 @@ def get_note(note_id: uuid_pkg.UUID, session: Session, user_id: int) -> Note:
     return note
 
 
-def create_note(note: NoteCreate, session: Session, user_id) -> Note:
+def create_note(note: NoteCreate, session: Session, user_id: int) -> Note:
     db_note = Note.model_validate(note)
     sentiment = get_sentiment(db_note.content, session)
     db_note.sentiment_id = sentiment.id
@@ -41,7 +41,7 @@ def create_note(note: NoteCreate, session: Session, user_id) -> Note:
     return db_note
 
 
-def delete_note(note_id: uuid_pkg.UUID, session: Session, user_id) -> Note:
+def delete_note(note_id: uuid_pkg.UUID, session: Session, user_id: int) -> Note:
     note = session.exec(
         select(Note).where(Note.uuid == note_id).where(
             Note.owner_id == user_id)

@@ -22,14 +22,21 @@ auth_handler = AuthHandler()
 @note_router.get("/", response_model=list[NoteRead])
 async def get_notes(session: Session = Depends(get_session),
                     user_id=Depends(auth_handler.auth_access_wrapper)) -> list[NoteRead]:
-    notes = crud.get_notes(session, user_id)
+    notes = crud.get_notes(
+        user_id=user_id,
+        session=session
+    )
     return notes
 
 
 @note_router.get("/{note_id}", response_model=NoteRead)
 async def get_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
                    user_id=Depends(auth_handler.auth_access_wrapper)) -> NoteRead:
-    note = crud.get_note(note_id, session, user_id)
+    note = crud.get_note(
+        note_id=note_id,
+        session=session,
+        user_id=user_id
+    )
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
@@ -39,7 +46,7 @@ async def get_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_sessio
 @note_router.post("/", response_model=NoteRead)
 async def create_note(note: NoteCreate, session: Session = Depends(get_session),
                       user_id=Depends(auth_handler.auth_access_wrapper)) -> NoteRead:
-    note = crud.create_note(note, session, user_id)
+    note = crud.create_note(note=note, session=session, user_id=user_id)
 
     return note
 
@@ -47,10 +54,14 @@ async def create_note(note: NoteCreate, session: Session = Depends(get_session),
 @note_router.delete("/{note_id}")
 async def delete_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
                       user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
-    note = crud.delete_note(note_id, session, user_id)
+    note = crud.delete_note(
+        note_id=note_id,
+        session=session,
+        user_id=user_id
+    )
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    
+
     return JSONResponse(status_code=204, content={"detail": "Note has been deleted"})
 
 
@@ -60,7 +71,12 @@ async def update_note(
     session: Session = Depends(get_session),
     user_id=Depends(auth_handler.auth_access_wrapper)
 ) -> NoteRead:
-    note = crud.update_note(note_id, note, session, user_id)
+    note = crud.update_note(
+        note=note,
+        note_id=note_id,
+        session=session,
+        user_id=user_id
+    )
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
@@ -73,7 +89,12 @@ async def update_note_partial(
     note: NoteOptional, session: Session = Depends(get_session),
     user_id=Depends(auth_handler.auth_access_wrapper)
 ) -> NoteRead:
-    note = crud.update_note(note_id, note, session, user_id)
+    note = crud.update_note(
+        note=note,
+        note_id=note_id,
+        session=session,
+        user_id=user_id
+    )
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
