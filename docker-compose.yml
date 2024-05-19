@@ -40,5 +40,8 @@ services:
     depends_on:
       - web
 
+  redis:
+    image: redis:7
+
 volumes:
     postgres_data:

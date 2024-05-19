@@ -97,3 +97,19 @@ def change_password(passwords: PasswordChange, session: Session, user_id: int):
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
+
+
+def reset_password(email: str, password: str, session: Session):
+    db_user = session.exec(
+        select(User).where(User.email == email)
+    ).first()
+
+    if not db_user:
+        raise HTTPException(status_code=401, detail="Non-existent user")
+
+    db_user.password = auth_handler.get_password_hash(password)
+
+    session.add(db_user)
+    session.commit()
+    session.refresh(db_user)
+    

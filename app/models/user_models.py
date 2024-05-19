@@ -46,3 +46,12 @@ class UserUpdate(SQLModel):
 class PasswordChange(SQLModel):
     old_password: str
     new_password: str
+
+
+class PasswordResetEmail(SQLModel):
+    email: EmailStr
+    
+class PasswordResetConfirm(SQLModel):
+    reset_code: str
+    new_password: str
+    
