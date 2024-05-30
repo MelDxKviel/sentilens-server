@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import nltk
 from contextlib import asynccontextmanager
 
@@ -13,6 +14,14 @@ async def lifespan(app: FastAPI):
     nltk.download('vader_lexicon')
     yield
 
+
+origins = [
+    "http://localhost:8080",
+    "https://localhost:8080",
+    "http://localhost",
+    "https://localhost",
+]
+
 app = FastAPI(
     title="Sentilens API",
     description="API for Sentilens app",
@@ -20,6 +29,14 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     lifespan=lifespan
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    llow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(note_router, prefix="/api")
