@@ -16,12 +16,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Sentilens API",
     description="API for Sentilens app",
-    version="0.1.2",
+    version="0.2.3",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
     lifespan=lifespan
 )
 
-app.include_router(note_router)
-app.include_router(user_router)
+app.include_router(note_router, prefix="/api")
+app.include_router(user_router, prefix="/api")
 
 
 if __name__ == "__main__":
