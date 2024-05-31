@@ -4,7 +4,7 @@ import nltk
 from contextlib import asynccontextmanager
 
 from app.database import init_db
-from app.routers import note_router, user_router
+from app.routers import note_router, user_router, music_router
 from app.config import global_settings
 
 
@@ -41,6 +41,7 @@ app.add_middleware(
 
 app.include_router(note_router, prefix="/api")
 app.include_router(user_router, prefix="/api")
+app.include_router(music_router, prefix="/api")
 
 
 if __name__ == "__main__":

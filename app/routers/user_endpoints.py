@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from sqlmodel import Session
 
 from app.database import get_session
-from app.auth import AuthHandler, LoginToken, AccessToken
+from app.auth import AuthHandler, LoginToken
 from app.models import UserRead, UserLogin, UserRegister, UserUpdate, PasswordChange, PasswordResetEmail, PasswordResetConfirm
 from app import crud
 from app.config import redis_client

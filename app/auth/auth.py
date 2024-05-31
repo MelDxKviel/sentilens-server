@@ -15,10 +15,6 @@ class LoginToken(BaseModel):
     expires_at: datetime
 
 
-class AccessToken(BaseModel):
-    access_token: str
-    expires_at: datetime
-
 
 class AuthHandler:
     security = HTTPBearer()
@@ -57,16 +53,6 @@ class AuthHandler:
         )
 
         return login_token
-
-    def encode_update_token(self, user_id: int) -> AccessToken:
-        access_token, exp = self.encode_token(user_id, "access_token")
-
-        update_token = AccessToken(
-            access_token=access_token,
-            expires_at=exp
-        )
-
-        return update_token
 
     def decode_token(self, token: str) -> str:
         try:
