@@ -10,8 +10,6 @@ python = "^3.12"
 fastapi = "^0.110.1"
 uvicorn = {extras = ["standard"], version = "^0.29.0"}
 pyjwt = "^2.8.0"
-deep-translator = "^1.11.4"
-nltk = "^3.8.1"
 sqlmodel = "^0.0.16"
 pydantic = {extras = ["email"], version = "^2.7.0"}
 pydantic-settings = "^2.2.1"

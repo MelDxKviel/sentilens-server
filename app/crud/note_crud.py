@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 
 from app.models import Note, NoteCreate, Sentiment
-from app.utils import get_sentiment
+from app.sentiment_analyzer import get_sentiment
 
 
 def get_notes(session: Session, user_id: int) -> list[Note]:
@@ -26,19 +26,26 @@ def get_note(note_id: uuid_pkg.UUID, session: Session, user_id: int) -> Note:
 
 
 def create_note(note: NoteCreate, session: Session, user_id: int) -> Note:
-    db_note = Note.model_validate(note)
-    sentiment = get_sentiment(db_note.content, session)
-    db_note.sentiment_id = sentiment.id
-    db_note.owner_id = user_id
-
-    try:
-        session.add(db_note)
-        session.commit()
-        session.refresh(db_note)
-    except IntegrityError:
+    
+    db_note = session.exec(
+        select(Note).where(Note.uuid == note.uuid)
+    ).first()
+    if db_note:
         raise HTTPException(status_code=400, detail="UUID already assigned")
     
-    return db_note
+    note = Note.model_validate(note)
+    sentiment = get_sentiment(note.content, session)
+    note.sentiment_id = sentiment.id
+    note.owner_id = user_id
+
+    try:
+        session.add(note)
+        session.commit()
+        session.refresh(note)
+    except IntegrityError:
+        raise HTTPException(status_code=400, detail="Failed to create note")
+    
+    return note
 
 
 def delete_note(note_id: uuid_pkg.UUID, session: Session, user_id: int) -> Note:
@@ -65,7 +72,7 @@ def update_note(note_id: uuid_pkg.UUID, note: NoteCreate, session: Session, user
     old_sentiment = None
     if note.title:
         db_note.title = note.title
-    if note.content:
+    if note.content and note.content != db_note.content:
         db_note.content = note.content
         old_sentiment = session.exec(
             select(Sentiment).where(Sentiment.id == db_note.sentiment_id)

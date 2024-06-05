@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     
     sender_gmail: str
     sender_gmail_password: str
+    
+    yagpt_folder: str
+    yagpt_key: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

@@ -1,18 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import nltk
 from contextlib import asynccontextmanager
 
 from app.database import init_db
 from app.routers import note_router, user_router, music_router
 from app.config import global_settings
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # init_db()
-    nltk.download('vader_lexicon')
-    yield
 
 
 origins = [
@@ -25,10 +17,9 @@ origins = [
 app = FastAPI(
     title="Sentilens API",
     description="API for Sentilens app",
-    version="0.2.3",
+    version="0.3.2",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
-    lifespan=lifespan
 )
 
 app.add_middleware(
