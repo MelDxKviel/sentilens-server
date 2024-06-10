@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import note_router, user_router, music_router, reccomendation_router
+from app.routers import note_router, user_router, music_router, recommendation_router
 from app.config import global_settings
 
 
@@ -31,7 +31,7 @@ app.add_middleware(
 app.include_router(note_router, prefix="/api")
 app.include_router(user_router, prefix="/api")
 app.include_router(music_router, prefix="/api")
-app.include_router(reccomendation_router, prefix="/api")
+app.include_router(recommendation_router, prefix="/api")
 
 
 if __name__ == "__main__":
