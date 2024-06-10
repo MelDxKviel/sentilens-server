@@ -10,9 +10,10 @@ class MoodCategory(str, enum.Enum):
     NEUTRAL = "NEUTRAL"
     GOOD = "GOOD"
     AWESOME = "AWESOME"
+    UNKNOWN = "UNKNOWN"
 
 class SentimentBase(SQLModel):
-    category: MoodCategory = Field(default=MoodCategory.NEUTRAL)
+    category: MoodCategory = Field(default=MoodCategory.UNKNOWN)
     value: float = Field(default=0.5)
     advice: str = Field(sa_column=Column(Text), default=None)
 

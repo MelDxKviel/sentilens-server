@@ -15,7 +15,6 @@ class LoginToken(BaseModel):
     expires_at: datetime
 
 
-
 class AuthHandler:
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -36,7 +35,7 @@ class AuthHandler:
         to_encode = payload.copy()
         if token_type == "access_token":
             to_encode.update(
-                {"exp": datetime.now(UTC) + timedelta(minutes=10)})
+                {"exp": datetime.now(UTC) + timedelta(hours=24)})
         else:
             to_encode.update({"exp": datetime.now(UTC) + timedelta(hours=720)})
 
