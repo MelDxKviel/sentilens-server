@@ -20,4 +20,4 @@ class Music(MusicBase, table=True):
 
     
 class MusicRead(MusicBase):
-    pass
+    id: int

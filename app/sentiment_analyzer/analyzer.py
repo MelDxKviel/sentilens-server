@@ -75,7 +75,7 @@ def get_sentiment(note_text: str, session: Session) -> Sentiment:
                 )
             except:
                 sentiment = Sentiment(
-                    category=None,
+                    category=MoodCategory.UNKNOWN,
                     value=0,
                     advice="Ответ ИИ:\n" + text
                 )
