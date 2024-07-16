@@ -45,11 +45,20 @@ def run_migrations_offline() -> None:
 
     """
     url = config.get_main_option("sqlalchemy.url")
+    
+    def process_revision_directives(context, revision, directives):
+            if config.cmd_opts.autogenerate:
+                script = directives[0]
+                if script.upgrade_ops.is_empty():
+                    directives[:] = []
+                    print('No changes in schema detected.')
+    
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        process_revision_directives=process_revision_directives,
     )
 
     with context.begin_transaction():
@@ -57,7 +66,18 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    def process_revision_directives(context, revision, directives):
+            if config.cmd_opts.autogenerate:
+                script = directives[0]
+                if script.upgrade_ops.is_empty():
+                    directives[:] = []
+                    print('No changes in schema detected.')
+    
+    context.configure(
+        connection=connection, 
+        target_metadata=target_metadata, 
+        process_revision_directives=process_revision_directives,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
