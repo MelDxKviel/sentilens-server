@@ -2,7 +2,7 @@ import uuid as uuid_pkg
 
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
-from sqlmodel import Session
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 
 from app import crud
@@ -20,9 +20,9 @@ auth_handler = AuthHandler()
 
 
 @note_router.get("/", response_model=list[NoteRead])
-async def get_notes(session: Session = Depends(get_session),
+async def get_notes(session: AsyncSession = Depends(get_session),
                     user_id=Depends(auth_handler.auth_access_wrapper)) -> list[NoteRead]:
-    notes = crud.get_notes(
+    notes = await crud.get_notes(
         user_id=user_id,
         session=session
     )
@@ -30,9 +30,9 @@ async def get_notes(session: Session = Depends(get_session),
 
 
 @note_router.get("/{note_id}", response_model=NoteRead)
-async def get_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
+async def get_note(note_id: uuid_pkg.UUID, session: AsyncSession = Depends(get_session),
                    user_id=Depends(auth_handler.auth_access_wrapper)) -> NoteRead:
-    note = crud.get_note(
+    note = await crud.get_note(
         note_id=note_id,
         session=session,
         user_id=user_id
@@ -44,17 +44,17 @@ async def get_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_sessio
 
 
 @note_router.post("/", response_model=NoteRead)
-async def create_note(note: NoteCreate, session: Session = Depends(get_session),
+async def create_note(note: NoteCreate, session: AsyncSession = Depends(get_session),
                       user_id=Depends(auth_handler.auth_access_wrapper)) -> NoteRead:
-    note = crud.create_note(note=note, session=session, user_id=user_id)
+    note = await crud.create_note(note=note, session=session, user_id=user_id)
 
     return note
 
 
 @note_router.delete("/{note_id}")
-async def delete_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_session),
+async def delete_note(note_id: uuid_pkg.UUID, session: AsyncSession = Depends(get_session),
                       user_id=Depends(auth_handler.auth_access_wrapper)) -> dict:
-    note = crud.delete_note(
+    note = await crud.delete_note(
         note_id=note_id,
         session=session,
         user_id=user_id
@@ -68,15 +68,16 @@ async def delete_note(note_id: uuid_pkg.UUID, session: Session = Depends(get_ses
 @note_router.put("/{note_id}", response_model=NoteRead)
 async def update_note(
     note_id: uuid_pkg.UUID, note: NoteCreate,
-    session: Session = Depends(get_session),
+    session: AsyncSession = Depends(get_session),
     user_id=Depends(auth_handler.auth_access_wrapper)
 ) -> NoteRead:
-    note = crud.update_note(
+    note = await crud.update_note(
         note=note,
         note_id=note_id,
         session=session,
         user_id=user_id
     )
+    
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
@@ -86,15 +87,16 @@ async def update_note(
 @note_router.patch("/{note_id}", response_model=NoteRead)
 async def update_note_partial(
     note_id: uuid_pkg.UUID,
-    note: NoteOptional, session: Session = Depends(get_session),
+    note: NoteOptional, session: AsyncSession = Depends(get_session),
     user_id=Depends(auth_handler.auth_access_wrapper)
 ) -> NoteRead:
-    note = crud.update_note(
+    note = await crud.update_note(
         note=note,
         note_id=note_id,
         session=session,
         user_id=user_id
     )
+    
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 

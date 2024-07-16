@@ -22,7 +22,7 @@ class Note(NoteBase, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     sentiment_id: int = Field(default=None, foreign_key="sentiment.id")
-    sentiment: Sentiment = Relationship()
+    sentiment: Sentiment = Relationship(sa_relationship_kwargs={"lazy": "selectin"},)
 
 
 class NoteRead(NoteBase):

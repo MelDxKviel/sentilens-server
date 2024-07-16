@@ -1,5 +1,6 @@
 from fastapi import HTTPException
-from sqlmodel import select, Session
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import User, UserRead, UserRegister, UserUpdate, PasswordChange
 from app.auth import AuthHandler
@@ -8,10 +9,12 @@ from app.auth import AuthHandler
 auth_handler = AuthHandler()
 
 
-def register_user(user: UserRegister, session: Session):
-    users = session.exec(
+async def register_user(user: UserRegister, session: AsyncSession):
+    result = await session.exec(
         select(User)
-    ).all()
+    )
+
+    users = result.all()
 
     if any(u.email == user.email for u in users):
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -20,51 +23,68 @@ def register_user(user: UserRegister, session: Session):
         raise HTTPException(status_code=400, detail="Username already registered")
 
     user.password = auth_handler.get_password_hash(user.password)
+    
     db_user = User.model_validate(user)
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
     return UserRead.model_validate(db_user)
 
 
-def get_login_token(user: UserRegister, session: Session):
-    db_user = session.exec(
+async def get_login_token(user: UserRegister, session: AsyncSession):
+    result = await session.exec(
         select(User).where(User.username == user.username)
-    ).first()
+    )
+    
+    db_user = result.first()
+    
     if not db_user:
         raise HTTPException(
             status_code=401, detail="Incorrect username or password")
+        
     if not auth_handler.verify_password(user.password, db_user.password):
         raise HTTPException(
             status_code=401, detail="Incorrect username or password")
+        
     login_token = auth_handler.encode_login_token(db_user.id)
+    
     return login_token
 
 
-def delete_user(user_id: int, session: Session):
-    db_user = session.exec(
+async def delete_user(user_id: int, session: AsyncSession):
+    result = await session.exec(
         select(User).where(User.id == user_id)
-    ).first()
+    )
+    
+    db_user = result.first()
+    
     if not db_user:
         raise HTTPException(status_code=401, detail="Non-existent user")
-    session.delete(db_user)
-    session.commit()
+    
+    await session.delete(db_user)
+    await session.commit()
 
 
-def get_user(user_id: int, session: Session):
-    db_user = session.exec(
+async def get_user(user_id: int, session: AsyncSession):
+    result = await session.exec(
         select(User).where(User.id == user_id)
-    ).first()
+    )
+    
+    db_user = result.first()
+    
     if not db_user:
         raise HTTPException(status_code=401, detail="Non-existent user")
+    
     return UserRead.model_validate(db_user)
 
 
-def update_user(user: UserUpdate, session: Session, user_id: int):
-    db_user = session.exec(
+async def update_user(user: UserUpdate, session: AsyncSession, user_id: int):
+    result = await session.exec(
         select(User).where(User.id == user_id)
-    ).first()
+    )
+    
+    db_user = result.first()
 
     if not db_user:
         raise HTTPException(status_code=401, detail="Non-existent user")
@@ -75,16 +95,18 @@ def update_user(user: UserUpdate, session: Session, user_id: int):
         db_user.email = user.email
 
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
     return UserRead.model_validate(db_user)
 
 
-def change_password(passwords: PasswordChange, session: Session, user_id: int):
-    db_user = session.exec(
+async def change_password(passwords: PasswordChange, session: AsyncSession, user_id: int):
+    result = await session.exec(
         select(User).where(User.id == user_id)
-    ).first()
+    )
+    
+    db_user = result.first()
 
     if not db_user:
         raise HTTPException(status_code=401, detail="Non-existent user")
@@ -95,14 +117,16 @@ def change_password(passwords: PasswordChange, session: Session, user_id: int):
     db_user.password = auth_handler.get_password_hash(passwords.new_password)
 
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
 
 
-def reset_password(email: str, password: str, session: Session):
-    db_user = session.exec(
+async def reset_password(email: str, password: str, session: AsyncSession):
+    result = await session.exec(
         select(User).where(User.email == email)
-    ).first()
+    )
+    
+    db_user = result.first()
 
     if not db_user:
         raise HTTPException(status_code=401, detail="Non-existent user")

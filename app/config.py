@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     @property
     def psycopg_url(self) -> PostgresDsn:
         return MultiHostUrl.build(
-            scheme="postgresql",
+            scheme="postgresql+asyncpg",
             username=self.pg_user,
             password=self.pg_password,
             host=self.pg_host,

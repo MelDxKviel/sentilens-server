@@ -1,4 +1,4 @@
-from .analyzer import get_sentiment
+from .new_analyzer import get_sentiment
 
 
 __all__ = [
