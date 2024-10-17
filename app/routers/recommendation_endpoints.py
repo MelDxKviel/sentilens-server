@@ -14,21 +14,26 @@ recommendation_router = APIRouter(
 
 
 @recommendation_router.get("/")
-async def get_recommendations(session: AsyncSession = Depends(get_session)) -> list[RecommendationRead]:
+async def get_recommendations(
+    session: AsyncSession = Depends(get_session)
+) -> list[RecommendationRead]:
     result = await session.exec(select(Recommendation))
     recommendations = result.all()
     return recommendations
 
 
 @recommendation_router.get("/{recommendation_id}")
-async def get_recommendation_by_id(recommendation_id: int, session: AsyncSession = Depends(get_session)) -> RecommendationRead:
+async def get_recommendation_by_id(
+    recommendation_id: int,
+    session: AsyncSession = Depends(get_session)
+) -> RecommendationRead:
     result = await session.exec(select(Recommendation).where(
         Recommendation.id == recommendation_id)
     )
-    
+
     recommendation = result.first()
-    
+
     if not recommendation:
         raise HTTPException(status_code=404, detail="Reccomendation not found")
-    
+
     return recommendation

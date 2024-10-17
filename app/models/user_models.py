@@ -50,8 +50,8 @@ class PasswordChange(SQLModel):
 
 class PasswordResetEmail(SQLModel):
     email: EmailStr
-    
+
+
 class PasswordResetConfirm(SQLModel):
     reset_code: str
     new_password: str
-    

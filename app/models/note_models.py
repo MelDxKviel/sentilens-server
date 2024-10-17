@@ -15,14 +15,19 @@ class NoteBase(SQLModel):
 
 class Note(NoteBase, table=True):
     uuid: Optional[uuid_pkg.UUID] = Field(
-        default_factory=uuid_pkg.uuid4, primary_key=True, index=True, nullable=False)
+        default_factory=uuid_pkg.uuid4,
+        primary_key=True, index=True,
+        nullable=False
+    )
     owner_id: int = Field(default=None, sa_column=Column(
         Integer, ForeignKey("user.id", ondelete="CASCADE")))
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     sentiment_id: int = Field(default=None, foreign_key="sentiment.id")
-    sentiment: Sentiment = Relationship(sa_relationship_kwargs={"lazy": "selectin"},)
+    sentiment: Sentiment = Relationship(
+        sa_relationship_kwargs={"lazy": "selectin"},
+    )
 
 
 class NoteRead(NoteBase):
@@ -35,10 +40,19 @@ class NoteRead(NoteBase):
 
 class NoteCreate(NoteBase, SQLModel):
     uuid: Optional[uuid_pkg.UUID] = Field(
-        default_factory=uuid_pkg.uuid4, primary_key=True, index=True, nullable=False)
-    
+        default_factory=uuid_pkg.uuid4,
+        primary_key=True,
+        index=True,
+        nullable=False
+    )
+
+
 class NoteOptional(NoteBase):
     uuid: Optional[uuid_pkg.UUID] = Field(
-        default_factory=uuid_pkg.uuid4, primary_key=True, index=True, nullable=False)
+        default_factory=uuid_pkg.uuid4,
+        primary_key=True,
+        index=True,
+        nullable=False
+    )
     title: str | None = None
     content: str | None = None

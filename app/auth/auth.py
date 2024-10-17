@@ -24,10 +24,16 @@ class AuthHandler:
     def get_password_hash(self, plain_password: str) -> str:
         return self.pwd_context.hash(plain_password)
 
-    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+    def verify_password(
+        self, plain_password: str,
+        hashed_password: str
+    ) -> bool:
         return self.pwd_context.verify(plain_password, hashed_password)
 
-    def encode_token(self, user_id: int, token_type: str) -> tuple[str, datetime]:
+    def encode_token(
+        self, user_id: int,
+        token_type: str
+    ) -> tuple[str, datetime]:
         payload = dict(
             sub=token_type,
             iss=user_id
@@ -39,7 +45,11 @@ class AuthHandler:
         else:
             to_encode.update({"exp": datetime.now(UTC) + timedelta(hours=720)})
 
-        return jwt.encode(to_encode, self.secret, algorithm='HS256'), to_encode["exp"]
+        return jwt.encode(
+            to_encode,
+            self.secret,
+            algorithm='HS256'
+            ), to_encode["exp"]
 
     def encode_login_token(self, user_id: int) -> LoginToken:
         access_token, exp = self.encode_token(user_id, "access_token")
@@ -73,7 +83,7 @@ class AuthHandler:
         except jwt.ExpiredSignatureError:
             raise HTTPException(
                 status_code=401, detail='Signature has expired')
-        except jwt.InvalidTokenError as e:
+        except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail='Invalid token')
 
     def decode_refresh_token(self, token: str) -> str:
@@ -85,13 +95,23 @@ class AuthHandler:
         except jwt.ExpiredSignatureError:
             raise HTTPException(
                 status_code=401, detail='Signature has expired')
-        except jwt.InvalidTokenError as e:
+        except jwt.InvalidTokenError:
             raise HTTPException(status_code=401, detail='Invalid token')
 
-    def auth_access_wrapper(self,
-                            auth: HTTPAuthorizationCredentials = Security(security, scopes=["access_token"])) -> str:
+    def auth_access_wrapper(
+        self,
+        auth: HTTPAuthorizationCredentials = Security(
+            security,
+            scopes=["access_token"]
+        )
+    ) -> str:
         return self.decode_access_token(auth.credentials)
 
-    def auth_refresh_wrapper(self,
-                             auth: HTTPAuthorizationCredentials = Security(security, scopes=["refresh_token"])) -> str:
+    def auth_refresh_wrapper(
+        self,
+        auth: HTTPAuthorizationCredentials = Security(
+            security,
+            scopes=["refresh_token"]
+        )
+    ) -> str:
         return self.decode_refresh_token(auth.credentials)

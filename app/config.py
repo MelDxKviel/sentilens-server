@@ -10,19 +10,20 @@ from fastapi_mail import ConnectionConfig
 dirname = os.path.dirname(__file__)
 templates_folder = os.path.join(dirname, 'templates')
 
+
 class Settings(BaseSettings):
     auth_key: str
-    
+
     pg_host: str
     pg_user: str
     pg_password: str
-    
+
     host: str = "localhost"
     port: int = 8000
-    
+
     sender_gmail: str
     sender_gmail_password: str
-    
+
     yagpt_folder: str
     yagpt_key: str
 
@@ -43,17 +44,17 @@ class Settings(BaseSettings):
 global_settings = Settings()
 
 email_config = ConnectionConfig(
-    MAIL_USERNAME = global_settings.sender_gmail,
-    MAIL_PASSWORD = global_settings.sender_gmail_password,
-    MAIL_FROM = global_settings.sender_gmail,
-    MAIL_PORT = 587,
-    MAIL_SERVER = "smtp.gmail.com",
-    MAIL_FROM_NAME = "Sentilens",
-    MAIL_STARTTLS = True,
-    MAIL_SSL_TLS = False,
-    USE_CREDENTIALS = True,
-    VALIDATE_CERTS = False,
-    TEMPLATE_FOLDER = templates_folder,
+    MAIL_USERNAME=global_settings.sender_gmail,
+    MAIL_PASSWORD=global_settings.sender_gmail_password,
+    MAIL_FROM=global_settings.sender_gmail,
+    MAIL_PORT=587,
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_FROM_NAME="Sentilens",
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
+    USE_CREDENTIALS=True,
+    VALIDATE_CERTS=False,
+    TEMPLATE_FOLDER=templates_folder,
 )
 
 redis_client = redis.Redis("redis", port=6379)

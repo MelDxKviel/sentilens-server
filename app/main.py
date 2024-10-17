@@ -1,7 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import note_router, user_router, music_router, recommendation_router
+from app.routers import (
+    note_router,
+    user_router,
+    music_router,
+    recommendation_router
+)
 from app.config import global_settings
 
 

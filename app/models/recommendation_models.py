@@ -7,12 +7,11 @@ class RecommendationBase(SQLModel):
     content: str = Field(sa_column=Column(Text), default=None)
     image: str
     url: str
-    
+
 
 class Recommendation(RecommendationBase, table=True):
     id: int = Field(primary_key=True, nullable=False)
-    
+
 
 class RecommendationRead(RecommendationBase):
     id: int
-    
