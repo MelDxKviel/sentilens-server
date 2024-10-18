@@ -8,7 +8,7 @@ from app.config import email_config
 logger = logging.getLogger("uvicorn")
 
 
-async def send_registration_notification(recipient_email: str):
+async def send_registration_notification(recipient_email: str) -> None:
     try:
         message = MessageSchema(
             subject="Thank you for registration in Sentilens!",

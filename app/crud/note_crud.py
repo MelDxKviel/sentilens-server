@@ -1,15 +1,16 @@
 import uuid as uuid_pkg
 from datetime import datetime
+from typing import Sequence, Optional
 
 from fastapi import HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Note, NoteCreate, Sentiment
+from app.models import Note, NoteCreate, NoteOptional, Sentiment
 from app.sentiment_analyzer import get_sentiment
 
 
-async def get_notes(session: AsyncSession, user_id: int) -> list[Note]:
+async def get_notes(session: AsyncSession, user_id: int) -> Sequence[Note]:
     result = await session.exec(
         select(Note).where(Note.owner_id == user_id).order_by(Note.created_at)
     )
@@ -23,7 +24,7 @@ async def get_note(
     note_id: uuid_pkg.UUID,
     session: AsyncSession,
     user_id: int
-) -> Note:
+) -> Note | None:
     result = await session.exec(
         select(Note).where(Note.uuid == note_id).where(
             Note.owner_id == user_id)
@@ -49,23 +50,23 @@ async def create_note(
     if db_note:
         raise HTTPException(status_code=400, detail="UUID already assigned")
 
-    note = Note.model_validate(note)
+    new_note = Note.model_validate(note)
     sentiment = await get_sentiment(note.content, session)
-    note.sentiment_id = sentiment.id
-    note.owner_id = user_id
+    new_note.sentiment_id = sentiment.id
+    new_note.owner_id = user_id
 
-    session.add(note)
+    session.add(new_note)
     await session.commit()
-    await session.refresh(note)
+    await session.refresh(new_note)
 
-    return note
+    return new_note
 
 
 async def delete_note(
     note_id: uuid_pkg.UUID,
     session: AsyncSession,
     user_id: int
-) -> Note:
+) -> Optional[Note]:
     result = await session.exec(
         select(Note).where(Note.uuid == note_id).where(
             Note.owner_id == user_id)
@@ -83,10 +84,10 @@ async def delete_note(
 
 async def update_note(
     note_id: uuid_pkg.UUID,
-    note: NoteCreate,
+    note: NoteCreate | NoteOptional,
     session: AsyncSession,
     user_id: int
-) -> Note:
+) -> Optional[Note]:
     result = await session.exec(
         select(Note).where(Note.uuid == note_id).where(
             Note.owner_id == user_id)
@@ -108,7 +109,7 @@ async def update_note(
         )
         old_sentiment = result.first()
 
-        new_sentiment = get_sentiment(db_note.content, session)
+        new_sentiment = await get_sentiment(db_note.content, session)
         db_note.sentiment_id = new_sentiment.id
 
     db_note.updated_at = datetime.now()

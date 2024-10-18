@@ -10,7 +10,7 @@ from app.config import global_settings
 
 
 PROMPT = """
-Необходимо дать оценку настроения по тексту заметки, которую оставил пользователь в своем дневнике. Также нужно дать совет 2-3 предложения. 
+Необходимо дать оценку настроения по тексту заметки, которую оставил пользователь в своем дневнике. Также нужно дать совет 2-3 предложения.
 Представь, что обращаешься к пользователю. Постарайся помочь ему, если что-то не так, или похвалить, если все отлично.
 
 Категории настроения:
@@ -76,7 +76,7 @@ async def get_sentiment(note_text: str, session: AsyncSession) -> Sentiment:
 
         try:
             sentiment_dict = json.loads(
-                "{" + pattern.search(text).group(1) + "}"
+                f"{{{pattern.search(text).group(1)}}}"
             )
 
             category = sentiment_dict['category']

@@ -35,7 +35,7 @@ class UserLogin(SQLModel):
 
 class UserCreate(UserBase):
     password: str
-    access_token: str = None
+    access_token: Optional[str] = None
 
 
 class UserUpdate(SQLModel):

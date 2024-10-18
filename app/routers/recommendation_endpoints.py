@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -13,20 +15,23 @@ recommendation_router = APIRouter(
 )
 
 
-@recommendation_router.get("/")
+@recommendation_router.get("/", response_model=RecommendationRead)
 async def get_recommendations(
     session: AsyncSession = Depends(get_session)
-) -> list[RecommendationRead]:
+) -> Sequence[Recommendation]:
     result = await session.exec(select(Recommendation))
     recommendations = result.all()
     return recommendations
 
 
-@recommendation_router.get("/{recommendation_id}")
+@recommendation_router.get(
+    "/{recommendation_id}",
+    response_model=RecommendationRead
+)
 async def get_recommendation_by_id(
     recommendation_id: int,
     session: AsyncSession = Depends(get_session)
-) -> RecommendationRead:
+) -> Recommendation:
     result = await session.exec(select(Recommendation).where(
         Recommendation.id == recommendation_id)
     )

@@ -33,7 +33,7 @@ user_router = APIRouter(
 auth_handler = AuthHandler()
 
 
-def generate_reset_code(length: int = 6):
+def generate_reset_code(length: int = 6) -> str:
     return ''.join(random.choices(string.digits, k=length))
 
 
@@ -51,12 +51,15 @@ async def register_user(
     background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session)
 ) -> UserRead:
-    user = await crud.register_user(
+    registered_user = await crud.register_user(
         user=user,
         session=session
     )
-    background_tasks.add_task(send_registration_notification, user.email)
-    return user
+    background_tasks.add_task(
+        send_registration_notification,
+        registered_user.email
+    )
+    return registered_user
 
 
 @user_router.post("/login", response_model=LoginToken)
@@ -73,21 +76,21 @@ async def login_user(
 
 @user_router.post("/update_token", response_model=LoginToken)
 async def update_token(
-    user_id=Depends(auth_handler.auth_refresh_wrapper)
+    user_id: str = Depends(auth_handler.auth_refresh_wrapper)
 ) -> LoginToken:
     if user_id is None:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    access_token = auth_handler.encode_login_token(user_id)
+    access_token = auth_handler.encode_login_token(int(user_id))
     return access_token
 
 
 @user_router.post("/delete")
 async def delete_user(
     session: AsyncSession = Depends(get_session),
-    user_id=Depends(auth_handler.auth_access_wrapper)
+    user_id: str = Depends(auth_handler.auth_access_wrapper)
 ) -> JSONResponse:
     await crud.delete_user(
-        user_id=user_id,
+        user_id=int(user_id),
         session=session
     )
     return JSONResponse(
@@ -98,11 +101,11 @@ async def delete_user(
 
 @user_router.get("/profile", response_model=UserRead)
 async def get_user(
-    user_id=Depends(auth_handler.auth_access_wrapper),
+    user_id: str = Depends(auth_handler.auth_access_wrapper),
     session: AsyncSession = Depends(get_session)
 ) -> UserRead:
     return await crud.get_user(
-        user_id=user_id,
+        user_id=int(user_id),
         session=session
     )
 
@@ -111,12 +114,12 @@ async def get_user(
 async def update_user(
     user: UserUpdate,
     session: AsyncSession = Depends(get_session),
-    user_id=Depends(auth_handler.auth_access_wrapper)
+    user_id: str = Depends(auth_handler.auth_access_wrapper)
 ) -> UserRead:
     return await crud.update_user(
         user=user,
         session=session,
-        user_id=user_id
+        user_id=int(user_id)
     )
 
 
@@ -124,12 +127,12 @@ async def update_user(
 async def change_password(
     passwords: PasswordChange,
     session: AsyncSession = Depends(get_session),
-    user_id=Depends(auth_handler.auth_access_wrapper)
+    user_id: str = Depends(auth_handler.auth_access_wrapper)
 ) -> JSONResponse:
     await crud.change_password(
         passwords=passwords,
         session=session,
-        user_id=user_id
+        user_id=int(user_id)
     )
     return JSONResponse(
         status_code=200,

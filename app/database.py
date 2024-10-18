@@ -1,3 +1,5 @@
+from collections.abc import AsyncGenerator
+
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -12,11 +14,11 @@ DATABASE_URL = global_settings.psycopg_url.unicode_string()
 engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 
 
-def init_db():
+def init_db() -> None:
     SQLModel.metadata.create_all(engine)
 
 
-async def get_session():
+async def get_session() -> AsyncGenerator:
     async_session = sessionmaker(
         engine,
         class_=AsyncSession,

@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -13,20 +15,20 @@ music_router = APIRouter(
 )
 
 
-@music_router.get("/")
+@music_router.get("/", response_model=MusicRead)
 async def get_music_list(
     session: AsyncSession = Depends(get_session)
-) -> list[MusicRead]:
+) -> Sequence[Music]:
     result = await session.exec(select(Music))
     music_list = result.all()
     return music_list
 
 
-@music_router.get("/{music_id}")
+@music_router.get("/{music_id}", response_model=MusicRead)
 async def get_music_by_id(
     music_id: int,
     session: AsyncSession = Depends(get_session)
-) -> MusicRead:
+) -> Music:
     result = await session.exec(select(Music).where(Music.id == music_id))
     music = result.first()
 

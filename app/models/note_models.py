@@ -35,7 +35,7 @@ class NoteRead(NoteBase):
     created_at: datetime
     updated_at: datetime
 
-    sentiment: SentimentRead = None
+    sentiment: Optional[SentimentRead] = None
 
 
 class NoteCreate(NoteBase, SQLModel):
@@ -54,5 +54,5 @@ class NoteOptional(NoteBase):
         index=True,
         nullable=False
     )
-    title: str | None = None
-    content: str | None = None
+    title: Optional[str] = None
+    content: Optional[str] = None

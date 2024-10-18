@@ -2,14 +2,21 @@ from fastapi import HTTPException
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import User, UserRead, UserRegister, UserUpdate, PasswordChange
-from app.auth import AuthHandler
+from app.models import (
+    User,
+    UserRead,
+    UserRegister,
+    UserUpdate,
+    UserLogin,
+    PasswordChange
+)
+from app.auth import AuthHandler, LoginToken
 
 
 auth_handler = AuthHandler()
 
 
-async def register_user(user: UserRegister, session: AsyncSession):
+async def register_user(user: UserRegister, session: AsyncSession) -> UserRead:
     result = await session.exec(
         select(User)
     )
@@ -35,7 +42,10 @@ async def register_user(user: UserRegister, session: AsyncSession):
     return UserRead.model_validate(db_user)
 
 
-async def get_login_token(user: UserRegister, session: AsyncSession):
+async def get_login_token(
+    user: UserRegister | UserLogin,
+    session: AsyncSession
+) -> LoginToken:
     result = await session.exec(
         select(User).where(User.username == user.username)
     )
@@ -50,12 +60,12 @@ async def get_login_token(user: UserRegister, session: AsyncSession):
         raise HTTPException(
             status_code=401, detail="Incorrect username or password")
 
-    login_token = auth_handler.encode_login_token(db_user.id)
+    login_token = auth_handler.encode_login_token(int(db_user.id))
 
     return login_token
 
 
-async def delete_user(user_id: int, session: AsyncSession):
+async def delete_user(user_id: int, session: AsyncSession) -> None:
     result = await session.exec(
         select(User).where(User.id == user_id)
     )
@@ -69,7 +79,7 @@ async def delete_user(user_id: int, session: AsyncSession):
     await session.commit()
 
 
-async def get_user(user_id: int, session: AsyncSession):
+async def get_user(user_id: int, session: AsyncSession) -> UserRead:
     result = await session.exec(
         select(User).where(User.id == user_id)
     )
@@ -82,7 +92,11 @@ async def get_user(user_id: int, session: AsyncSession):
     return UserRead.model_validate(db_user)
 
 
-async def update_user(user: UserUpdate, session: AsyncSession, user_id: int):
+async def update_user(
+    user: UserUpdate,
+    session: AsyncSession,
+    user_id: int
+) -> UserRead:
     result = await session.exec(
         select(User).where(User.id == user_id)
     )
@@ -131,7 +145,11 @@ async def change_password(
     await session.refresh(db_user)
 
 
-async def reset_password(email: str, password: str, session: AsyncSession):
+async def reset_password(
+    email: str,
+    password: str,
+    session: AsyncSession
+) -> None:
     result = await session.exec(
         select(User).where(User.email == email)
     )
@@ -144,5 +162,5 @@ async def reset_password(email: str, password: str, session: AsyncSession):
     db_user.password = auth_handler.get_password_hash(password)
 
     session.add(db_user)
-    session.commit()
-    session.refresh(db_user)
+    await session.commit()
+    await session.refresh(db_user)
